@@ -64,15 +64,63 @@ app.post('/send',function(req,res){
     });
 });
 
-app.post('/verify',function(req,res){
+app.use('/verify',function(req,res){
 
     if(req.body.otp==otp){
-        res.send("You has been successfully registered");
+        //res.send("You has been successfully registered");
+        res.render('votes');
     }
     else{
         res.render('otp',{msg : 'otp is incorrect'});
     }
 });  
+
+
+
+
+var otp2 = Math.random();
+otp2 = otp2 * 1000000;
+otp2 = parseInt(otp2);
+console.log(otp2);
+
+app.post('/enter-otp-to-vote', function(req,res){
+    email=req.body.email;
+
+     // send mail with defined transport object
+    var mailOptions={
+        to: req.body.email,
+       subject: "Otp for registration is: ",
+       html: "<h3>OTP for account verification is </h3>"  + "<h1 style='font-weight:bold;'>" + otp2 +"</h1>" // html body
+     };
+     
+     transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            return console.log(error);
+        }
+        console.log('Message sent: %s', info.messageId);   
+        console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+  
+        res.render('otp-to-vote');
+    });
+});
+/*app.get('/verify', function(req,res){
+    res.render('votes');
+});*/
+app.post('/vote-now', function(req,res){
+    //res.render('vote-now');
+    if(req.body.otp==otp2){
+        //res.send("You has been successfully registered");
+        res.render('vote-now');
+    }
+    else{
+        res.render('otp-to-vote',{msg : 'otp is incorrect'});
+    }
+});
+
+app.post('/thank-you', function(req,res){
+    res.render('thank-you');
+});
+
 
 app.post('/resend',function(req,res){
     var mailOptions={
