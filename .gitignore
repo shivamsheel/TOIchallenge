@@ -1,0 +1,10 @@
+node_modules
+dist
+public
+npm-debug.log
+.idea
+webpack-assets.json
+.live
+.DS_STORE
+launch.json
+package-lock.json
