@@ -2,14 +2,17 @@ const express=require('express');
 const bodyparser=require('body-parser');
 const nodemailer=require('nodemailer');
 const path=require('path');
-const exphbs=require('express-handlebars');
+//const exphbs=require('express-handlebars');
 
 
 const app=express();
 
 // view engine setup
-app.engine('handlebars',exphbs({ extname: "hbs", defaultLayout: false, layoutsDir: "views/ "}));
-app.set('view engine','handlebars');
+//app.engine('handlebars',exphbs({ extname: "hbs", defaultLayout: false, layoutsDir: "views/ "}));
+//app.set('view engine','handlebars');
+
+app.set('view engine','ejs');
+app.set('views','views');
 
 // body parser middleware
 app.use(bodyparser.urlencoded({extended : false}));
@@ -21,6 +24,15 @@ app.use('/public',express.static(path.join(__dirname, 'public')));
 
 app.get('/',function(req,res){
     res.render('contact');
+    //res.render('cts');
+});
+
+app.get('/login', function(req,res){
+    res.render('login');
+});
+
+app.post('/login', function(req,res){
+    res.render('login');
 });
 
 var email;
@@ -60,7 +72,7 @@ app.post('/send',function(req,res){
         console.log('Message sent: %s', info.messageId);   
         console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
   
-        res.render('otp');
+        res.render('otp',{msg : ''});
     });
 });
 
@@ -68,6 +80,7 @@ app.use('/verify',function(req,res){
 
     if(req.body.otp==otp){
         //res.send("You has been successfully registered");
+        //res.render('votes');
         res.render('votes');
     }
     else{
@@ -100,7 +113,7 @@ app.post('/enter-otp-to-vote', function(req,res){
         console.log('Message sent: %s', info.messageId);   
         console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
   
-        res.render('otp-to-vote');
+        res.render('otp-to-vote',{msg : ''});
     });
 });
 /*app.get('/verify', function(req,res){
@@ -139,6 +152,25 @@ app.post('/resend',function(req,res){
     });
 
 });
+
+app.post('/vote-resend',function(req,res){
+    var mailOptions={
+        to: email,
+       subject: "Otp for registration is: ",
+       html: "<h3>OTP for account verification is </h3>"  + "<h1 style='font-weight:bold;'>" + otp2 +"</h1>" // html body
+     };
+     
+     transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            return console.log(error);
+        }
+        console.log('Message sent: %s', info.messageId);   
+        console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+        res.render('otp-to-vote',{msg:"otp has been sent"});
+    });
+
+});
+
 
 const PORT=process.env.PORT||5000;
 app.listen(PORT,()=>{
