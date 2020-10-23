@@ -103,7 +103,7 @@ let transporter = nodemailer.createTransport({
     
 
 app.get('/vote', function(req,res){
-    res.render('votes');
+    res.render('votes',{name:req.user.name});
 
 });
 /*app.post('/send',function(req,res){
