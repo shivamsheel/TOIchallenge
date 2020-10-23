@@ -12,6 +12,7 @@ const session = require('express-session')
 const methodOverride = require('method-override')
 //const exphbs=require('express-handlebars');
 const bcrypt=require('bcrypt');
+const verifyController = require('./controllers/verifyController');
 
 const app=express();
 
@@ -61,7 +62,7 @@ app.post('/', async (req, res) => {
 
 app.use(flash());
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: 'secret',
   resave: false,
   saveUninitialized: false
 }));
@@ -103,7 +104,7 @@ let transporter = nodemailer.createTransport({
     
 
 app.get('/vote', function(req,res){
-    res.render('votes',{name:req.user.name});
+    res.render('votes',{name:"Gaurav"});
 
 });
 /*app.post('/send',function(req,res){
@@ -145,40 +146,58 @@ app.use('/verify',function(req,res){
 var otp = Math.random();
 otp = otp * 1000000;
 otp = parseInt(otp);
+var phonenumber = null;
 console.log(otp);
 
 app.post('/enter-otp-to-vote', function(req,res){
     email=req.body.email;
-
+    phonenumber = '+91' + req.body.phone;
+    let channel = 'sms'; //defaultChannel
      // send mail with defined transport object
     var mailOptions={
         to: req.body.email,
        subject: "Otp for registration is: ",
        html: "<h3>OTP for account verification is </h3>"  + "<h1 style='font-weight:bold;'>" + otp +"</h1>" // html body
      };
-     
-     transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            return console.log(error);
-        }
-        console.log('Message sent: %s', info.messageId);   
-        console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+ 
+     verifyController.getCode(phonenumber, channel)
+     .then(resp => {
+         console.log(resp.data);
+         res.render('otp-to-vote',{msg : ''});
+     })
+     .catch(err => console.log("Error in getting otp", err));
+    //  transporter.sendMail(mailOptions, (error, info) => {
+    //     if (error) {
+    //         return console.log(error);
+    //     }
+    //     console.log('Message sent: %s', info.messageId);   
+    //     console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
   
-        res.render('otp-to-vote',{msg : ''});
-    });
+    //     res.render('otp-to-vote',{msg : ''});
+    // });
 });
 /*app.get('/verify', function(req,res){
     res.render('votes');
 });*/
 app.post('/vote-now', function(req,res){
     //res.render('vote-now');
-    if(req.body.otp==otp){
-        //res.send("You has been successfully registered");
-        res.render('vote-now');
-    }
-    else{
-        res.render('otp-to-vote',{msg : 'otp is incorrect'});
-    }
+    console.log(req.body);
+    // if(req.body.otp==otp){
+    //     //res.send("You has been successfully registered");
+    //     res.render('vote-now');
+    // }
+    // else{
+    //     res.render('otp-to-vote',{msg : 'otp is incorrect'});
+    // }
+    verifyController.verifyCode(phonenumber, req.body.otp)
+    .then(resp => {
+        if(resp.data.status === 'approved' && resp.data.valid) {
+            res.render('vote-now')
+        } else {
+            res.render('otp-to-vote', {masg:"Please enter valid otp"});
+        }
+    })
+    .catch(err=> res.render('otp-to-vote', {masg:"Please enter valid otp"}));
 });
 
 app.post('/thank-you', function(req,res){
