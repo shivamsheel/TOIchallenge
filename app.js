@@ -3,7 +3,7 @@ const bodyparser=require('body-parser');
 const nodemailer=require('nodemailer');
 const path=require('path');
 //const exphbs=require('express-handlebars');
-
+const bcrypt=require('bcrypt');
 
 const app=express();
 
@@ -21,11 +21,30 @@ app.use(bodyparser.json());
 //static folder
 app.use('/public',express.static(path.join(__dirname, 'public')));
 
+const users = [];
 
 app.get('/',function(req,res){
     res.render('contact');
     //res.render('cts');
 });
+
+app.post('/', async (req, res) => {
+    try {
+      const hashedPassword = await bcrypt.hash(req.body.password, 10);
+      const hashedVoterId = await bcrypt.hash(req.body.VoterID, 10);
+      users.push({
+        id: Date.now().toString(),
+        name: req.body.firstname,
+        email: req.body.email,
+        VoterID: hashedVoterId,
+        password: hashedPassword
+      });
+      res.redirect('/login')
+    } catch {
+      res.redirect('/')
+    }
+    console.log(users);
+  });
 
 app.get('/login', function(req,res){
     res.render('login');
