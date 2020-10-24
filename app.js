@@ -105,7 +105,7 @@ let transporter = nodemailer.createTransport({
     
 
 app.get('/vote', function(req,res){
-    res.render('votes',{name:"Gaurav"});
+    res.render('votes',{name:req.user.name});
 
 });
 /*app.post('/send',function(req,res){
@@ -160,21 +160,23 @@ app.post('/enter-otp-to-vote', function(req,res){
        html: "<h3>OTP for account verification is </h3>"  + "<h1 style='font-weight:bold;'>" + otp +"</h1>" // html body
      };
  
-     verifyController.getCode(phonenumber, channel)
-     .then(resp => {
-         console.log(resp.data);
-         res.render('otp-to-vote',{msg : ''});
-     })
-     .catch(err => console.log("Error in getting otp", err));
-    //  transporter.sendMail(mailOptions, (error, info) => {
-    //     if (error) {
-    //         return console.log(error);
-    //     }
-    //     console.log('Message sent: %s', info.messageId);   
-    //     console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+     
+     transporter.sendMail(mailOptions, (error, info) => {
+         if (error) {
+             return console.log(error);
+         }
+         console.log('Message sent: %s', info.messageId);   
+         console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
   
-    //     res.render('otp-to-vote',{msg : ''});
-    // });
+         res.render('otp-to-vote',{msg : ''});
+        });
+
+        //verifyController.getCode(phonenumber, channel)
+     //.then(resp => {
+         //console.log(resp.data);
+         //res.render('otp-to-vote',{msg : ''});
+     //})
+     //.catch(err => console.log("Error in getting otp", err));
 });
 /*app.get('/verify', function(req,res){
     res.render('votes');
@@ -206,7 +208,7 @@ app.post('/thank-you', function(req,res){
 });
 
 
-app.post('/resend',function(req,res){
+/*app.post('/resend',function(req,res){
     var mailOptions={
         to: email,
        subject: "Otp for registration is: ",
@@ -222,7 +224,7 @@ app.post('/resend',function(req,res){
         res.render('otp',{msg:"otp has been sent"});
     });
 
-});
+});*/
 
 app.post('/vote-resend',function(req,res){
     var mailOptions={
