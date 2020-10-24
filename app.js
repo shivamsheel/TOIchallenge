@@ -154,7 +154,7 @@ app.post('/enter-otp-to-vote', function(req,res){
     data['phonenumber'] = phonenumber;
     let channel = 'sms'; //defaultChannel
      // send mail with defined transport object
-    var mailOptions={
+    /*var mailOptions={
         to: req.body.email,
        subject: "Otp for registration is: ",
        html: "<h3>OTP for account verification is </h3>"  + "<h1 style='font-weight:bold;'>" + otp +"</h1>" // html body
@@ -169,14 +169,14 @@ app.post('/enter-otp-to-vote', function(req,res){
          console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
   
          res.render('otp-to-vote',{msg : ''});
-        });
+        });*/
 
-        //verifyController.getCode(phonenumber, channel)
-     //.then(resp => {
-         //console.log(resp.data);
-         //res.render('otp-to-vote',{msg : ''});
-     //})
-     //.catch(err => console.log("Error in getting otp", err));
+        verifyController.getCode(phonenumber, channel)
+     .then(resp => {
+         console.log(resp.data);
+         res.render('otp-to-vote',{msg : ''});
+     })
+     .catch(err => console.log("Error in getting otp", err));
 });
 /*app.get('/verify', function(req,res){
     res.render('votes');
