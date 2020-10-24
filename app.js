@@ -15,6 +15,7 @@ const bcrypt=require('bcrypt');
 const verifyController = require('./controllers/verifyController');
 
 const app=express();
+let data = {};
 
 // view engine setup
 //app.engine('handlebars',exphbs({ extname: "hbs", defaultLayout: false, layoutsDir: "views/ "}));
@@ -146,12 +147,11 @@ app.use('/verify',function(req,res){
 var otp = Math.random();
 otp = otp * 1000000;
 otp = parseInt(otp);
-var phonenumber = null;
-console.log(otp);
 
 app.post('/enter-otp-to-vote', function(req,res){
     email=req.body.email;
     phonenumber = '+91' + req.body.phone;
+    data['phonenumber'] = phonenumber;
     let channel = 'sms'; //defaultChannel
      // send mail with defined transport object
     var mailOptions={
@@ -189,15 +189,16 @@ app.post('/vote-now', function(req,res){
     // else{
     //     res.render('otp-to-vote',{msg : 'otp is incorrect'});
     // }
-    verifyController.verifyCode(phonenumber, req.body.otp)
+    verifyController.verifyCode(data.phonenumber, req.body.otp)
     .then(resp => {
-        if(resp.data.status === 'approved' && resp.data.valid) {
+        console.log(resp);
+        if(resp.status === 'approved' && resp.valid) {
             res.render('vote-now')
         } else {
-            res.render('otp-to-vote', {masg:"Please enter valid otp"});
+            res.render('otp-to-vote', {msg:"Please enter valid otp"});
         }
     })
-    .catch(err=> res.render('otp-to-vote', {masg:"Please enter valid otp"}));
+    .catch(err=> res.render('otp-to-vote', {msg:"Please enter valid otp"}));
 });
 
 app.post('/thank-you', function(req,res){

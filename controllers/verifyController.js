@@ -19,15 +19,17 @@ exports.getCode = async (phone, channel) => {
 };
 
 exports.verifyCode = async (phonenumber, code) => {
+   console.log(phonenumber, code);
    return client
         .verify
         .services(VERIFY_SERVICE_SID)
         .verificationChecks
         .create({
-            to: `+${phonenumber}`,
+            to: phonenumber,
             code
         })
         .then(data => {
             return data;
-        });
+        })
+        .catch(err => console.log("error happened " + err));
 };
