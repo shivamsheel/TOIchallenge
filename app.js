@@ -85,10 +85,10 @@ app.post('/login',passport.authenticate('local', {
 
 var email;
 
-/*var otp = Math.random();
+var otp = Math.random();
 otp = otp * 1000000;
 otp = parseInt(otp);
-console.log(otp);*/
+console.log(otp);
 
 let transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -144,9 +144,9 @@ app.use('/verify',function(req,res){
 
 
 
-var otp = Math.random();
+/*var otp = Math.random();
 otp = otp * 1000000;
-otp = parseInt(otp);
+otp = parseInt(otp);*/
 
 app.post('/enter-otp-to-vote', function(req,res){
     email=req.body.email;
