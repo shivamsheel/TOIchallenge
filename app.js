@@ -109,6 +109,7 @@ let transporter = nodemailer.createTransport({
 
 app.get('/vote', function(req,res){
     data.userId = req.user.id;
+    data.voterId = req.user.voterID;
     res.render('votes',{name:req.user.name});
 
 });
@@ -289,7 +290,8 @@ app.post('/thank-you', async function(req,res){
         const hashedVote = await bcrypt.hash(req.body.radio, 10);
         votes.push({
             id: Date.now().toString(),
-            vote: hashedVote
+            vote: hashedVote,
+            voterID: data.voterId
         });
         //function call to fetch User based on id
         users.forEach(function (user) {
