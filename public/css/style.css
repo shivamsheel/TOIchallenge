@@ -88,6 +88,14 @@
     outline:0;
     transition: background-color 2s ease-out;
   }
+
+  .login-btn {
+    width: 100px;
+    height: 30px;
+    background-color: #92bde7;
+    border-radius: 2px;
+    text-align: center;
+  }
   
   /* LARGE SCREENS */
   @media(min-width:700px){

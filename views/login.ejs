@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Sign-up form</title>
-  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.css" />
   <link rel="stylesheet" href="../public/css/style.css">
 </head>
+
 <body>
   <div class="container">
     <h1 class="brand"><span>Welcome User </span> Sign-up</h1>
@@ -24,7 +27,7 @@
       <div class="contact">
         <h3>Email Us</h3>
         <% if (messages.error) { %>
-          <%= messages.error %>
+        <%= messages.error %>
         <% } %>
         <form method="POST" action="/login">
           <!--<p>
@@ -36,6 +39,7 @@
             <input type="text" name="AdharNumber" required>
           </p>
           <p> -->
+          <p>
             <label>Email Address</label>
             <input type="email" name="email" required>
           </p>
@@ -47,17 +51,19 @@
             <label>Voter Id</label>
             <input type="number" name="VoterID" required>
           </p>
-          <label>Password</label>
+          <p class="full">
+            <label>Password</label>
             <input type="password" id="password" name="password" required>
           </p>
-         
+
           <p class="full">
             <button type="submit">Submit</button>
           </p>
-          <a href="/">Signup</a>
+          <a class="login-btn" href="/">Sign up</a>
         </form>
       </div>
     </div>
   </div>
 </body>
+
 </html>
