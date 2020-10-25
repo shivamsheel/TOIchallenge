@@ -14,6 +14,8 @@ const methodOverride = require('method-override')
 const bcrypt=require('bcrypt');
 const verifyController = require('./controllers/verifyController');
 
+const multer = require('multer');
+
 const app=express();
 let data = {};
 
@@ -195,7 +197,7 @@ app.post('/vote-now', function(req,res){
     .then(resp => {
         console.log(resp);
         if(resp.status === 'approved' && resp.valid) {
-            res.render('vote-now')
+            res.render('upload-file')
         } else {
             res.render('otp-to-vote', {msg:"Please enter valid otp"});
         }
@@ -203,10 +205,43 @@ app.post('/vote-now', function(req,res){
     .catch(err=> res.render('otp-to-vote', {msg:"Please enter valid otp"}));
 });
 
-app.post('/thank-you', function(req,res){
-    res.render('thank-you');
-});
 
+
+
+/*app.get('/upload-file', function(req, res, next) {
+   
+    res.render('upload-file', { title: 'Upload File', success:'' });
+     
+    });*/
+
+    app.post('/uploadfile', function(req, res, next) {
+   
+        res.render('upload-file', { title: 'Upload File', success:'' });
+         
+        });
+  
+    var storage = multer.diskStorage({
+        destination: "./data/votingData/",
+        filename:(req,file,cb) => {
+            cb(null,file.fieldname+"_"+Date.now() + path.extname(file.originalname));
+        }
+    });
+  
+    var upload = multer({
+        storage:storage
+    }).single('file');
+  
+    app.post('/upload', upload,function(req, res, next) {
+    
+      var success = req.file.filename + "uploaded successfully";
+    res.render('upload-file', { title: 'Upload File', success:success });
+     
+    });
+  
+    app.post('/done', function(req, res, next) {
+     
+    res.render('vote-now');
+    });
 
 /*app.post('/resend',function(req,res){
     var mailOptions={
@@ -242,6 +277,11 @@ app.post('/vote-resend',function(req,res){
         res.render('otp-to-vote',{msg:"otp has been sent"});
     });
 
+});
+
+
+app.post('/thank-you', function(req,res){
+    res.render('thank-you');
 });
 
 
