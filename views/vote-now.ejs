@@ -28,8 +28,22 @@
         <h3>Please Vote!</h3>
         <form method="POST" action="/thank-you">
           <p>
-            <label>Party Name</label>
-            <input type="text" name="firstname" required>
+            <label class="voter">BJP
+              <input type="radio" name="radio" id="BJP" value="BJP">
+              <span class="votercheckmark"></span>
+            </label>
+            <label class="voter">Congress
+              <input type="radio" name="radio" id="Congress" value="Congress">
+              <span class="votercheckmark"></span>
+            </label>
+            <label class="voter">AAP
+              <input type="radio" name="radio" id="AAP" value="AAP">
+              <span class="votercheckmark"></span>
+            </label>
+            <label class="voter">NOTA
+              <input type="radio" name="radio" id="NOTA" value="NOTA">
+              <span class="votercheckmark"></span>
+            </label>
           </p>
           <p>
             <p class="full">

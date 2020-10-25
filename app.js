@@ -37,6 +37,7 @@ const initializePassport = require('./passport-config');
 initializePassport(passport, email => users.find(user => user.email === email), id => users.find(user => user.id === id));
 
 const users = [];
+const votes = [];
 
 app.get('/',function(req,res){
     res.render('contact');
@@ -107,6 +108,7 @@ let transporter = nodemailer.createTransport({
     
 
 app.get('/vote', function(req,res){
+    data.userId = req.user.id;
     res.render('votes',{name:req.user.name});
 
 });
@@ -209,37 +211,37 @@ app.post('/vote-now', function(req,res){
 
 
 /*app.get('/upload-file', function(req, res, next) {
-   
+
     res.render('upload-file', { title: 'Upload File', success:'' });
-     
+
     });*/
 
     app.post('/uploadfile', function(req, res, next) {
-   
+
         res.render('upload-file', { title: 'Upload File', success:'' });
-         
+
         });
-  
+
     var storage = multer.diskStorage({
         destination: "./data/votingData/",
         filename:(req,file,cb) => {
             cb(null,file.fieldname+"_"+Date.now() + path.extname(file.originalname));
         }
     });
-  
+
     var upload = multer({
         storage:storage
     }).single('file');
-  
+
     app.post('/upload', upload,function(req, res, next) {
-    
+
       var success = req.file.filename + "uploaded successfully";
     res.render('upload-file', { title: 'Upload File', success:success });
-     
+
     });
-  
+
     app.post('/done', function(req, res, next) {
-     
+
     res.render('vote-now');
     });
 
@@ -280,10 +282,28 @@ app.post('/vote-resend',function(req,res){
 });
 
 
-app.post('/thank-you', function(req,res){
-    res.render('thank-you');
-});
 
+app.post('/thank-you', async function(req,res){
+    console.log(req.body);
+    try {
+        const hashedVote = await bcrypt.hash(req.body.radio, 10);
+        votes.push({
+            id: Date.now().toString(),
+            vote: hashedVote
+        });
+        //function call to fetch User based on id
+        users.forEach(function (user) {
+            if (user.id === data.userId) {
+                user.voted = true;
+            }
+        });
+        res.render('thank-you');
+        console.log(users);
+    } catch {
+        res.redirect('/');
+    }
+    console.log(votes);
+});
 
 const PORT=process.env.PORT||5000;
 app.listen(PORT,()=>{
