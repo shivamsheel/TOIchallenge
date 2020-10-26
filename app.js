@@ -37,7 +37,15 @@ const initializePassport = require('./passport-config');
 initializePassport(passport, email => users.find(user => user.email === email), id => users.find(user => user.id === id));
 
 const users = [];
-const votes = [];
+const votes = {
+    "BJP": 0,
+    "Congress": 0,
+    "AAP": 0,
+    "NOTA": 0
+};
+//const voteHash = {};
+const optionHash = {};
+const partyArray = ["BJP", "Congress", "AAP", "NOTA"];
 
 app.get('/',function(req,res){
     res.render('contact');
@@ -110,6 +118,13 @@ let transporter = nodemailer.createTransport({
 app.get('/vote', function(req,res){
     data.userId = req.user.id;
     data.voterId = req.user.voterID;
+    partyArray.forEach( function (partyName) {
+        baseVoterIdParty = data.voterId + "===>" + partyName;
+        optionHash[partyName] = bcrypt.hashSync(baseVoterIdParty, 10);
+    });
+    console.log("\n\n\n\n***************************************\n\n\n\n");
+    console.log("Option Hash => " + JSON.stringify(optionHash));
+    console.log("\n\n\n\n***************************************\n\n\n\n");
     res.render('votes',{name:req.user.name});
 
 });
@@ -127,7 +142,7 @@ app.get('/vote', function(req,res){
         if (error) {
             return console.log(error);
         }
-        console.log('Message sent: %s', info.messageId);   
+        console.log('Message sent: %s', info.messageId);
         console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
   
         res.render('otp',{msg : ''});
@@ -243,7 +258,7 @@ app.post('/vote-now', function(req,res){
 
     app.post('/done', function(req, res, next) {
 
-    res.render('vote-now');
+    res.render('vote-now', {bjp: optionHash["BJP"], cong: optionHash["Congress"], aap: optionHash["AAP"], nota: optionHash["NOTA"]});
     });
 
 /*app.post('/resend',function(req,res){
@@ -287,12 +302,17 @@ app.post('/vote-resend',function(req,res){
 app.post('/thank-you', async function(req,res){
     console.log(req.body);
     try {
-        const hashedVote = await bcrypt.hash(req.body.radio, 10);
-        votes.push({
-            id: Date.now().toString(),
-            vote: hashedVote,
-            voterID: data.voterId
-        });
+        votedForParty = Object.keys(optionHash).find(key => optionHash[key] === req.body.radio);
+        console.log("Voted For : " + votedForParty);
+        votes[votedForParty] += 1;
+        console.log(votes);
+        //const hashedVote = bcrypt.hashSync(req.body.radio, 10);
+        //console.log(hashedVote);
+        // votes.push({
+        //     id: Date.now().toString(),
+        //     vote: hashedVote,
+        //     voterID: data.voterId
+        // });
         //function call to fetch User based on id
         users.forEach(function (user) {
             if (user.id === data.userId) {
@@ -304,7 +324,6 @@ app.post('/thank-you', async function(req,res){
     } catch {
         res.redirect('/');
     }
-    console.log(votes);
 });
 
 const PORT=process.env.PORT||5000;
