@@ -90,7 +90,7 @@ app.get('/login', function(req,res){
 });
 
 app.post('/login',passport.authenticate('local', {
-    successRedirect: '/vote',
+    successRedirect: '/timer',
     failureRedirect: '/login',
     failureFlash: true
   }));
@@ -113,6 +113,12 @@ let transporter = nodemailer.createTransport({
       pass: 'sprinklr@shivam123',
     }
     
+});
+
+app.get('/timer', function(req,res){
+
+    res.render('timer');
+
 });
     
 
