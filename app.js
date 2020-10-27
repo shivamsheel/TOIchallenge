@@ -61,7 +61,8 @@ app.post('/', async (req, res) => {
         name: req.body.firstname,
         email: req.body.email,
         voterID: hashedVoterId,
-        password: hashedPassword
+        password: hashedPassword,
+        voted: false
       });
       res.redirect('/login')
     } catch {
@@ -120,6 +121,7 @@ app.get('/vote', function(req,res){
     data.voterId = req.user.voterID;
     partyArray.forEach( function (partyName) {
         baseVoterIdParty = data.voterId + "===>" + partyName;
+        console.log(baseVoterIdParty);
         optionHash[partyName] = bcrypt.hashSync(baseVoterIdParty, 10);
     });
     console.log("\n\n\n\n***************************************\n\n\n\n");
@@ -148,6 +150,7 @@ app.get('/vote', function(req,res){
         res.render('otp',{msg : ''});
     });
 });
+
 
 app.use('/verify',function(req,res){
 
@@ -322,7 +325,7 @@ app.post('/thank-you', async function(req,res){
         res.render('thank-you');
         console.log(users);
     } catch {
-        res.redirect('/');
+        res.redirect('/login');
     }
 });
 
