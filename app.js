@@ -1,37 +1,37 @@
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
-  }
+}
 
-const express=require('express');
-const bodyparser=require('body-parser');
-const nodemailer=require('nodemailer');
-const path=require('path');
+const express = require('express');
+const bodyparser = require('body-parser');
+const nodemailer = require('nodemailer');
+const path = require('path');
 const passport = require('passport');
 const flash = require('express-flash')
 const session = require('express-session')
 const methodOverride = require('method-override')
 //const exphbs=require('express-handlebars');
-const bcrypt=require('bcrypt');
+const bcrypt = require('bcrypt');
 const verifyController = require('./controllers/verifyController');
 
 const multer = require('multer');
 
-const app=express();
+const app = express();
 let data = {};
 
 // view engine setup
 //app.engine('handlebars',exphbs({ extname: "hbs", defaultLayout: false, layoutsDir: "views/ "}));
 //app.set('view engine','handlebars');
 
-app.set('view engine','ejs');
-app.set('views','views');
+app.set('view engine', 'ejs');
+app.set('views', 'views');
 
 // body parser middleware
-app.use(bodyparser.urlencoded({extended : false}));
+app.use(bodyparser.urlencoded({ extended: false }));
 app.use(bodyparser.json());
 
 //static folder
-app.use('/public',express.static(path.join(__dirname, 'public')));
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 const initializePassport = require('./passport-config');
 initializePassport(passport, email => users.find(user => user.email === email), id => users.find(user => user.id === id));
@@ -47,7 +47,7 @@ const votes = {
 const optionHash = {};
 const partyArray = ["BJP", "Congress", "AAP", "NOTA"];
 
-app.get('/',function(req,res){
+app.get('/', function (req, res) {
     res.render('contact');
     //res.render('cts');
 });
@@ -66,34 +66,34 @@ app.post('/', async (req, res) => {
       });
       res.redirect('/login')
     } catch {
-      res.redirect('/')
+        res.redirect('/')
     }
     console.log(users);
-  });
+});
 
 
 
 app.use(flash());
 app.use(session({
-  secret: 'secret',
-  resave: false,
-  saveUninitialized: false
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: false
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(methodOverride('_method'));
 
-app.get('/login', function(req,res){
+app.get('/login', function (req, res) {
     res.render('login');
 
 });
 
-app.post('/login',passport.authenticate('local', {
+app.post('/login', passport.authenticate('local', {
     successRedirect: '/vote',
     failureRedirect: '/login',
     failureFlash: true
-  }));
+}));
 
 var email;
 
@@ -106,15 +106,14 @@ let transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
     secure: true,
-    service : 'Gmail',
-    
+    service: 'Gmail',
+
     auth: {
-      user: 'messiahleotest@gmail.com',
-      pass: 'sprinklr@shivam123',
+        user: 'messiahleotest@gmail.com',
+        pass: 'sprinklr@shivam123',
     }
-    
+
 });
-    
 
 app.get('/vote', function(req,res){
     data.userId = req.user.id;
@@ -128,7 +127,6 @@ app.get('/vote', function(req,res){
     console.log("Option Hash => " + JSON.stringify(optionHash));
     console.log("\n\n\n\n***************************************\n\n\n\n");
     res.render('votes',{name:req.user.name});
-
 });
 /*app.post('/send',function(req,res){
     email=req.body.email;
@@ -171,12 +169,12 @@ app.use('/verify',function(req,res){
 otp = otp * 1000000;
 otp = parseInt(otp);*/
 
-app.post('/enter-otp-to-vote', function(req,res){
-    email=req.body.email;
+app.post('/enter-otp-to-vote', function (req, res) {
+    email = req.body.email;
     phonenumber = '+91' + req.body.phone;
     data['phonenumber'] = phonenumber;
     let channel = 'sms'; //defaultChannel
-     // send mail with defined transport object
+    // send mail with defined transport object
     /*var mailOptions={
         to: req.body.email,
        subject: "Otp for registration is: ",
@@ -194,17 +192,17 @@ app.post('/enter-otp-to-vote', function(req,res){
          res.render('otp-to-vote',{msg : ''});
         });*/
 
-        verifyController.getCode(phonenumber, channel)
-     .then(resp => {
-         console.log(resp.data);
-         res.render('otp-to-vote',{msg : ''});
-     })
-     .catch(err => console.log("Error in getting otp", err));
+    verifyController.getCode(phonenumber, channel)
+        .then(resp => {
+            console.log(resp.data);
+            res.render('otp-to-vote', { msg: '' });
+        })
+        .catch(err => console.log("Error in getting otp", err));
 });
 /*app.get('/verify', function(req,res){
     res.render('votes');
 });*/
-app.post('/vote-now', function(req,res){
+app.post('/vote-now', function (req, res) {
     //res.render('vote-now');
     console.log(req.body);
     // if(req.body.otp==otp){
@@ -215,19 +213,16 @@ app.post('/vote-now', function(req,res){
     //     res.render('otp-to-vote',{msg : 'otp is incorrect'});
     // }
     verifyController.verifyCode(data.phonenumber, req.body.otp)
-    .then(resp => {
-        console.log(resp);
-        if(resp.status === 'approved' && resp.valid) {
-            res.render('upload-file')
-        } else {
-            res.render('otp-to-vote', {msg:"Please enter valid otp"});
-        }
-    })
-    .catch(err=> res.render('otp-to-vote', {msg:"Please enter valid otp"}));
+        .then(resp => {
+            console.log(resp);
+            if (resp.status === 'approved' && resp.valid) {
+                res.render('upload-file')
+            } else {
+                res.render('otp-to-vote', { msg: "Please enter valid otp" });
+            }
+        })
+        .catch(err => res.render('otp-to-vote', { msg: "Please enter valid otp" }));
 });
-
-
-
 
 /*app.get('/upload-file', function(req, res, next) {
 
@@ -264,6 +259,10 @@ app.post('/vote-now', function(req,res){
     res.render('vote-now', {bjp: optionHash["BJP"], cong: optionHash["Congress"], aap: optionHash["AAP"], nota: optionHash["NOTA"]});
     });
 
+    app.get('/admin', function (req, res) {
+        res.render('admin');
+    })
+
 /*app.post('/resend',function(req,res){
     var mailOptions={
         to: email,
@@ -282,20 +281,20 @@ app.post('/vote-now', function(req,res){
 
 });*/
 
-app.post('/vote-resend',function(req,res){
-    var mailOptions={
+app.post('/vote-resend', function (req, res) {
+    var mailOptions = {
         to: email,
-       subject: "Otp for registration is: ",
-       html: "<h3>OTP for account verification is </h3>"  + "<h1 style='font-weight:bold;'>" + otp +"</h1>" // html body
-     };
-     
-     transporter.sendMail(mailOptions, (error, info) => {
+        subject: "Otp for registration is: ",
+        html: "<h3>OTP for account verification is </h3>" + "<h1 style='font-weight:bold;'>" + otp + "</h1>" // html body
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
             return console.log(error);
         }
-        console.log('Message sent: %s', info.messageId);   
+        console.log('Message sent: %s', info.messageId);
         console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-        res.render('otp-to-vote',{msg:"otp has been sent"});
+        res.render('otp-to-vote', { msg: "otp has been sent" });
     });
 
 });
@@ -329,12 +328,7 @@ app.post('/thank-you', async function(req,res){
     }
 });
 
-const PORT=process.env.PORT||5000;
-app.listen(PORT,()=>{
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
     console.log(`app is live at ${PORT}`);
 })
-
-
-
-
-
