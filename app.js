@@ -61,7 +61,9 @@ app.post('/', async (req, res) => {
             name: req.body.firstname,
             email: req.body.email,
             voterID: hashedVoterId,
+            phoneNum: req.body.phone,
             password: hashedPassword,
+            isAdmin: false,
             voted: false
         });
         res.redirect('/login')
@@ -152,6 +154,7 @@ app.get('/vote', function (req, res) {
   
         res.render('otp',{msg : ''});
     });
+
 });
 
 
@@ -200,13 +203,64 @@ app.post('/enter-otp-to-vote', function (req, res) {
     verifyController.getCode(phonenumber, channel)
         .then(resp => {
             console.log(resp.data);
-            res.render('otp-to-vote', { msg: '' });
+            res.render('otp-to-vote', { msg: '', name: req.user.name });
         })
         .catch(err => console.log("Error in getting otp", err));
 });
 /*app.get('/verify', function(req,res){
     res.render('votes');
 });*/
+app.post('/vote-resend', function (req, res) {
+    /*var mailOptions = {
+        to: email,
+        subject: "Otp for registration is: ",
+        html: "<h3>OTP for account verification is </h3>" + "<h1 style='font-weight:bold;'>" + otp + "</h1>" // html body
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            return console.log(error);
+        }
+        console.log('Message sent: %s', info.messageId);
+        console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+        res.render('otp-to-vote', { msg: "otp has been sent" });
+    });*/
+    //email = req.body.email;
+    phonenumber = '+91' + req.body.phone;
+    data['phonenumber'] = phonenumber;
+    let channel = 'sms'; 
+    
+
+
+    verifyController.getCode(phonenumber, channel)
+        .then(resp => {
+            console.log(resp.data);
+            res.render('otp-to-vote', { msg: 'OTP has been re-sent', name: req.user.name });
+        })
+        .catch(err => console.log("Error in getting otp", err));
+
+    //defaultChannel
+    // send mail with defined transport object
+    /*var mailOptions={
+        to: req.body.email,
+       subject: "Otp for registration is: ",
+       html: "<h3>OTP for account verification is </h3>"  + "<h1 style='font-weight:bold;'>" + otp +"</h1>" // html body
+     };
+ 
+     
+     transporter.sendMail(mailOptions, (error, info) => {
+         if (error) {
+             return console.log(error);
+         }
+         console.log('Message sent: %s', info.messageId);   
+         console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+  
+         res.render('otp-to-vote',{msg : ''});
+        });*/
+
+
+});
+
 app.post('/vote-now', function (req, res) {
     //res.render('vote-now');
     console.log(req.body);
@@ -221,12 +275,12 @@ app.post('/vote-now', function (req, res) {
         .then(resp => {
             console.log(resp);
             if (resp.status === 'approved' && resp.valid) {
-                res.render('upload-file')
+                res.render('upload-file',{ title: 'Upload File', success: '' })
             } else {
-                res.render('otp-to-vote', { msg: "Please enter valid otp" });
+                res.render('otp-to-vote', { msg: "Please enter correct otp", name: req.user.name});
             }
         })
-        .catch(err => res.render('otp-to-vote', { msg: "Please enter valid otp" }));
+        .catch(err => res.render('otp-to-vote', { msg: "No OTP",name: req.user.name }));
 });
 
 /*app.get('/upload-file', function(req, res, next) {
@@ -235,11 +289,11 @@ app.post('/vote-now', function (req, res) {
 
     });*/
 
-app.post('/uploadfile', function (req, res, next) {
+/*app.post('/uploadfile', function (req, res, next) {
 
     res.render('upload-file', { title: 'Upload File', success: '' });
 
-});
+});*/
 
 var storage = multer.diskStorage({
     destination: "./data/votingData/",
@@ -261,12 +315,12 @@ app.post('/upload', upload, function (req, res, next) {
 
 app.post('/done', function (req, res, next) {
 
-    res.render('vote-now', { bjp: optionHash["BJP"], cong: optionHash["Congress"], aap: optionHash["AAP"], nota: optionHash["NOTA"] });
+    res.render('vote-now', { name: req.user.name, bjp: optionHash["BJP"], cong: optionHash["Congress"], aap: optionHash["AAP"], nota: optionHash["NOTA"] });
 });
 
 app.get('/admin', function (req, res) {
     res.render('admin', { data: votes });
-})
+});
 
 /*app.post('/resend',function(req,res){
     var mailOptions={
@@ -286,23 +340,7 @@ app.get('/admin', function (req, res) {
 
 });*/
 
-app.post('/vote-resend', function (req, res) {
-    var mailOptions = {
-        to: email,
-        subject: "Otp for registration is: ",
-        html: "<h3>OTP for account verification is </h3>" + "<h1 style='font-weight:bold;'>" + otp + "</h1>" // html body
-    };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            return console.log(error);
-        }
-        console.log('Message sent: %s', info.messageId);
-        console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-        res.render('otp-to-vote', { msg: "otp has been sent" });
-    });
-
-});
 
 
 
@@ -326,12 +364,14 @@ app.post('/thank-you', async function (req, res) {
                 user.voted = true;
             }
         });
-        res.render('thank-you');
+        res.render('thank-you',{name: req.user.name});
         console.log(users);
     } catch {
         res.redirect('/login');
     }
 });
+
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
