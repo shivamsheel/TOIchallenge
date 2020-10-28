@@ -54,17 +54,17 @@ app.get('/', function (req, res) {
 
 app.post('/', async (req, res) => {
     try {
-      const hashedPassword = await bcrypt.hash(req.body.password, 10);
-      const hashedVoterId = await bcrypt.hash(req.body.voterID, 10);
-      users.push({
-        id: Date.now().toString(),
-        name: req.body.firstname,
-        email: req.body.email,
-        voterID: hashedVoterId,
-        password: hashedPassword,
-        voted: false
-      });
-      res.redirect('/login')
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        const hashedVoterId = await bcrypt.hash(req.body.voterID, 10);
+        users.push({
+            id: Date.now().toString(),
+            name: req.body.firstname,
+            email: req.body.email,
+            voterID: hashedVoterId,
+            password: hashedPassword,
+            voted: false
+        });
+        res.redirect('/login')
     } catch {
         res.redirect('/')
     }
@@ -90,7 +90,7 @@ app.get('/login', function (req, res) {
 });
 
 app.post('/login', passport.authenticate('local', {
-    successRedirect: '/vote',
+    successRedirect: '/timer',
     failureRedirect: '/login',
     failureFlash: true
 }));
@@ -115,10 +115,15 @@ let transporter = nodemailer.createTransport({
 
 });
 
-app.get('/vote', function(req,res){
+app.get('/timer', function (req, res) {
+    res.render('timer');
+
+});
+
+app.get('/vote', function (req, res) {
     data.userId = req.user.id;
     data.voterId = req.user.voterID;
-    partyArray.forEach( function (partyName) {
+    partyArray.forEach(function (partyName) {
         baseVoterIdParty = data.voterId + "===>" + partyName;
         console.log(baseVoterIdParty);
         optionHash[partyName] = bcrypt.hashSync(baseVoterIdParty, 10);
@@ -126,7 +131,7 @@ app.get('/vote', function(req,res){
     console.log("\n\n\n\n***************************************\n\n\n\n");
     console.log("Option Hash => " + JSON.stringify(optionHash));
     console.log("\n\n\n\n***************************************\n\n\n\n");
-    res.render('votes',{name:req.user.name});
+    res.render('votes', { name: req.user.name });
 });
 /*app.post('/send',function(req,res){
     email=req.body.email;
@@ -230,38 +235,38 @@ app.post('/vote-now', function (req, res) {
 
     });*/
 
-    app.post('/uploadfile', function(req, res, next) {
+app.post('/uploadfile', function (req, res, next) {
 
-        res.render('upload-file', { title: 'Upload File', success:'' });
+    res.render('upload-file', { title: 'Upload File', success: '' });
 
-        });
+});
 
-    var storage = multer.diskStorage({
-        destination: "./data/votingData/",
-        filename:(req,file,cb) => {
-            cb(null,file.fieldname+"_"+Date.now() + path.extname(file.originalname));
-        }
-    });
+var storage = multer.diskStorage({
+    destination: "./data/votingData/",
+    filename: (req, file, cb) => {
+        cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname));
+    }
+});
 
-    var upload = multer({
-        storage:storage
-    }).single('file');
+var upload = multer({
+    storage: storage
+}).single('file');
 
-    app.post('/upload', upload,function(req, res, next) {
+app.post('/upload', upload, function (req, res, next) {
 
-      var success = req.file.filename + "uploaded successfully";
-    res.render('upload-file', { title: 'Upload File', success:success });
+    var success = req.file.filename + "uploaded successfully";
+    res.render('upload-file', { title: 'Upload File', success: success });
 
-    });
+});
 
-    app.post('/done', function(req, res, next) {
+app.post('/done', function (req, res, next) {
 
-    res.render('vote-now', {bjp: optionHash["BJP"], cong: optionHash["Congress"], aap: optionHash["AAP"], nota: optionHash["NOTA"]});
-    });
+    res.render('vote-now', { bjp: optionHash["BJP"], cong: optionHash["Congress"], aap: optionHash["AAP"], nota: optionHash["NOTA"] });
+});
 
-    app.get('/admin', function (req, res) {
-        res.render('admin');
-    })
+app.get('/admin', function (req, res) {
+    res.render('admin', { data: votes });
+})
 
 /*app.post('/resend',function(req,res){
     var mailOptions={
@@ -301,7 +306,7 @@ app.post('/vote-resend', function (req, res) {
 
 
 
-app.post('/thank-you', async function(req,res){
+app.post('/thank-you', async function (req, res) {
     console.log(req.body);
     try {
         votedForParty = Object.keys(optionHash).find(key => optionHash[key] === req.body.radio);

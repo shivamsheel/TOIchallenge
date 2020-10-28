@@ -36,12 +36,15 @@
     </div>
 </body>
 <script>
-    let partyInfo = [['BJP', 88], ['Congress', 41], ['Aap gand maraye', 69]];
+    let votesData = JSON.parse('<%- JSON.stringify(data) %>');
+    let graphData = [];
+    Object.keys(votesData).forEach(key => graphData.push([key, votesData[key]]));
+    console.log(graphData);
     const chart = {
         type: 'bar',
         series: [
             {
-                values: partyInfo
+                values: graphData
             }
         ]
     };
