@@ -226,7 +226,8 @@ app.post('/vote-resend', function (req, res) {
         res.render('otp-to-vote', { msg: "otp has been sent" });
     });*/
     //email = req.body.email;
-    phonenumber = '+91' + req.body.phone;
+    //phonenumber = '+91' + req.body.phone;
+    phonenumber = '+91' + req.user.phoneNum;
     data['phonenumber'] = phonenumber;
     let channel = 'sms'; 
     
