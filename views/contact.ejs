@@ -26,27 +26,45 @@
         <form method="POST" action="/">
           <p>
             <label>First Name</label>
-            <input type="text" name="firstname" required>
+            <input type="text" name="firstname" required value="<%= oldInput.firstname %>">
+            <% if (error.firstname) { %>
+              <%= error.firstname.msg %>
+            <% } %>
           </p>
           <p>
             <label>Aadhar Number</label>
-            <input type="text" name="AdharNumber" required>
+            <input type="text" name="AdharNumber" required value="<%= oldInput.AdharNumber %>">
+            <% if (error.AdharNumber) { %>
+              <%= error.AdharNumber.msg %>
+            <% } %>
           </p>
           <p>
             <label>Email Address</label>
-            <input type="email" name="email" required>
+            <input type="email" name="email" required value="<%= oldInput.email %>">
+            <% if (error.email) { %>
+              <%= error.email.msg %>
+            <% } %>
           </p>
           <p>
             <label>Phone Number</label>
-            <input type="number" name="phone" required>
+            <input type="number" name="phone" required value="<%= oldInput.phone %>">
+            <% if (error.phone) { %>
+              <%= error.phone.msg %>
+            <% } %>
           </p>
           <p>
             <label>Voter Id</label>
-            <input type="number" name="voterID" required>
+            <input type="number" name="voterID" required value="<%= oldInput.VoterID %>">
+            <% if (error.VoterID) { %>
+              <%= error.VoterID.msg %>
+            <% } %>
           </p>
           <p>
           <label>Password</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" name="password" required value="<%= oldInput.password %>"> 
+            <% if (error.password) { %>
+              <%= error.password.msg %>
+            <% } %>
           </p>
          
           <p class="full">

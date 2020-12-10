@@ -7,12 +7,31 @@ const bodyparser = require('body-parser');
 const nodemailer = require('nodemailer');
 const path = require('path');
 const passport = require('passport');
-const flash = require('express-flash')
-const session = require('express-session')
-const methodOverride = require('method-override')
+const flash = require('express-flash');
+const session = require('express-session');
+const methodOverride = require('method-override');
+const MongoDBStore = require('connect-mongodb-session')(session);
 //const exphbs=require('express-handlebars');
 const bcrypt = require('bcrypt');
 const verifyController = require('./controllers/verifyController');
+const { body, validationResult, check } = require('express-validator');
+const mongoose = require('mongoose');
+const {createWorker} = require('tesseract.js');
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = require('twilio')(accountSid, authToken);
+const MONGODB_URI = 'mongodb+srv://ShivamMessi:messi1234@cluster0.3ntoz.mongodb.net/votes?retryWrites=true&w=majority';
+
+const store = new MongoDBStore({
+
+    uri: MONGODB_URI,
+    collection: 'sessions',
+});
+
+const User = require('./models/user');
+const UploadFile = require('./models/upload');
+const jwt = require('jsonwebtoken');
+const fs = require('fs');
 
 const multer = require('multer');
 const AWS = require('aws-sdk');
@@ -20,6 +39,8 @@ const uuid = require('uuid');
 
 const app = express();
 let data = {};
+let userName;
+
 AWS.config.loadFromPath('./config.json');
 
 // view engine setup
@@ -36,8 +57,39 @@ app.use(bodyparser.json());
 //static folder
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-const initializePassport = require('./passport-config');
-initializePassport(passport, email => users.find(user => user.email === email), id => users.find(user => user.id === id));
+/*const initializePassport = require('./passport-config');
+initializePassport(passport, email => users.find(user => user.email === email), id => users.find(user => user.id === id));*/
+
+app.use(session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: false,
+    store:store
+  }));
+  
+  //app.use(csrfProtection); //after you initialize the session
+  app.use(flash()); //after session
+  
+  
+  
+  app.use((req,res,next) => {
+  
+      if(!req.session.user) {
+          return next();
+      }
+      User.findById(req.session.user._id)
+          .then(user => {
+             req.user = user;
+             next();
+          })
+          .catch(err => console.log(err));
+  });
+  
+  app.use((req,res,next) => {
+      res.locals.isAuthenticated = req.session.isLoggedIn,
+      //res.locals.csrfToken = req.csrfToken() //method provided by the package itself - wich is then stored in csrfToen
+      next();
+  });
 
 const users = [];
 const votes = {
@@ -55,8 +107,19 @@ const partyArray = ["BJP", "Congress", "AAP", "NOTA"];
     //res.render('cts');
 });*/
 
+function isAuth (req,res,next) {
+
+    if(!req.session.isLoggedIn) {
+        console.log('no Active sessions found!');
+        return res.redirect('/login');
+    }
+    next();
+
+};
+
+
 app.get('/', function (req, res) {
-    res.render('contact');
+    res.render('contact',{error:{}, oldInput:{}});
     //res.render('cts');
     console.log('root file');
     
@@ -64,30 +127,99 @@ app.get('/', function (req, res) {
 });
 
 
-app.post('/', async (req, res) => {
-    try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const hashedVoterId = await bcrypt.hash(req.body.voterID, 10);
-        users.push({
-            id: Date.now().toString(),
-            name: req.body.firstname,
-            email: req.body.email,
-            voterID: hashedVoterId,
-            phoneNum: req.body.phone,
-            password: hashedPassword,
-            isAdmin: false,
-            voted: false
+app.post('/', [
+    check('firstname','Invalid User Name').isString(),
+    check('AdharNumber','Invalid Aadhar Number').isAlphanumeric().custom((value, {req} ) => {
+        /* if( value === 'test@test.com') {
+            throw new Error('This email is forbidden!');
+        }
+        return true; */
+        return User.findOne({AdharNumber:value}) //finding if user exists or not - left side is DB value right is user's input
+        .then(userDoc => { //userDoc can be named any ways we want
+          if(userDoc) {  //if user exists
+            return Promise.reject('This Aadhar already exists Sir');
+          }
         });
-        res.redirect('/login')
-    } catch {
-        res.redirect('/')
+    }),
+    check('email','Invalid Email').isEmail().normalizeEmail().custom((value, {req} ) => {
+        /* if( value === 'test@test.com') {
+            throw new Error('This email is forbidden!');
+        }
+        return true; */
+        return User.findOne({email:value}) //finding if user exists or not - left side is DB value right is user's input
+        .then(userDoc => { //userDoc can be named any ways we want
+          if(userDoc) {  //if user exists
+            return Promise.reject('Email already exists Sir');
+          }
+        });
+    }),
+    check('phone','Invalid Phone Number').isMobilePhone().custom((value, {req} ) => {
+        /* if( value === 'test@test.com') {
+            throw new Error('This email is forbidden!');
+        }
+        return true; */
+        return User.findOne({phoneNum:value}) //finding if user exists or not - left side is DB value right is user's input
+        .then(userDoc => { //userDoc can be named any ways we want
+          if(userDoc) {  //if user exists
+            return Promise.reject('This Number already exists Sir');
+          }
+        });
+    }),
+    check('VoterID','Invalid VoterID').isAlphanumeric(),
+    check('password','Invalid Password').isLength({min:5, max:15})
+] , async (req, res) => {
+    const errors = validationResult(req);
+    const firstname = req.body.firstname;
+    const AdharNumber = req.body.AdharNumber;
+    const email = req.body.email;
+    const phone = req.body.phone;
+    const VoterID = req.body.VoterID;
+    const password = req.body.password;
+    console.log(errors.mapped());
+    if(!errors.isEmpty()){
+        return res.status(422).render('contact',
+        {
+            error:errors.mapped(),
+            oldInput: {firstname:firstname, AdharNumber:AdharNumber, email:email,phone:phone,VoterID:VoterID, password:password }
+        });
     }
-    console.log(users);
+
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const hashedVoterId = await bcrypt.hash(req.body.VoterID, 10);
+    
+       /*users.push({
+        id: Date.now().toString(),
+        name: req.body.firstname,
+        email: req.body.email,
+        VoterID: hashedVoterId,
+        password: hashedPassword
+      });   // delete after tests - no use. */
+      
+      const user = new User({
+        name: firstname,
+        email: email,
+        voterID: hashedVoterId,
+        AdharNumber:AdharNumber,
+        phoneNum: phone,
+        password: hashedPassword,
+        isAdmin: false,
+        hasVoted: false,
+        
+        });
+      user.save()
+      .then(result => {
+        res.redirect('/login');
+        console.log(user);
+        //console.log(users);
+      }).catch(err => {
+        console.log(err);
+        res.redirect('/');
+      });
 });
 
 
 
-app.use(flash());
+/*app.use(flash());
 app.use(session({
     secret: 'secret',
     resave: false,
@@ -96,20 +228,110 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(methodOverride('_method'));
+app.use(methodOverride('_method'));*/
 
 app.get('/login', function (req, res) {
-    res.render('login');
-
+    
+    res.render('login',
+    {
+        error:{}, 
+        oldInput:{},
+        errorMessage:''
+    }
+    );
 });
 
-app.post('/login', passport.authenticate('local', {
+/*app.post('/login', passport.authenticate('local', {
     successRedirect: '/timer',
     failureRedirect: '/login',
     failureFlash: true
-}));
+}));*/
 
-var email;
+app.post('/login',[
+    check('email','Invalid Email').isEmail(),
+    check('VoterID','Invalid Voter ID').isAlphanumeric(),
+    check('password','Invalid Password').isLength({min:5, max:15})
+    
+], function(req,res) {
+
+    const errors = validationResult(req);
+    const VoterID = req.body.VoterID;
+    const email = req.body.email;
+    const password = req.body.password;
+    console.log(errors.mapped());
+
+    if(!errors.isEmpty()){
+        
+        return res.status(422).render('login',
+        {
+            error:errors.mapped(),
+            oldInput: {email:email, VoterID:VoterID, password:password },
+            errorMessage:''
+        });
+        
+    }
+    
+    User.findOne({email: email})
+    .then(user => {
+        if(!user) {
+            //req.flash('error','Invalid Email or Password');
+            return res.status(422).render('login', 
+            {
+                error:{},
+                oldInput: {email:email, VoterID:VoterID,password:password},
+                errorMessage: 'Email Does not Match '
+            });
+        }
+        //const getUserId = user._id;
+        //const getUserPassword = user.password;
+        bcrypt.compare(password, user.password)
+        .then(doMatch => {
+            if(doMatch) {
+
+                req.session.isLoggedIn = true;
+                req.session.user = user; //will store entire mongoose user model
+                userName = user.name; 
+                console.log('Timer Loading');
+                return req.session.save((err) => {
+                    console.log(err);
+                    if(!user.isAdmin){
+                        res.redirect('/timer');
+                    }else {
+                        res.redirect('/admin');
+                    }
+                    
+                  });
+                
+                
+            }
+
+            return res.status(422).render('login', 
+            {
+                error:{},
+                oldInput: {email:email,VoterID:VoterID,password:password},
+                errorMessage: 'Password Does not Match'
+            });
+
+        })
+        .catch(err=> {
+            console.log(err);
+            res.redirect('/login');
+        });
+    })
+    .catch(err=> {
+        console.log(err);
+    });
+
+    
+    /*passport.authenticate('local', {
+    successRedirect: '/timer',
+    failureRedirect: '/login',
+    failureFlash: true
+  });*/
+});
+
+
+/*var email;
 
 var otp = Math.random();
 otp = otp * 1000000;
@@ -127,7 +349,7 @@ let transporter = nodemailer.createTransport({
         pass: 'sprinklr@shivam123',
     }
 
-});
+});*/
 
 app.get('/timer', function (req, res) {
     res.render('timer');
@@ -146,6 +368,16 @@ app.get('/vote', function (req, res) {
     console.log("Option Hash => " + JSON.stringify(optionHash));
     console.log("\n\n\n\n***************************************\n\n\n\n");
     res.render('votes', { name: req.user.name });
+
+    client.messages
+      .create({
+         from: 'whatsapp:+14155238886',
+         body: 'Hello ' + userName + ' The voting has now begun',
+         to: 'whatsapp:+916360527341'
+       })
+      //.then(message => console.log(message.sid));
+      .then(message => console.log(message));  // to be enabled while live testing
+
 });
 /*app.post('/send',function(req,res){
     email=req.body.email;
@@ -308,6 +540,10 @@ app.post('/vote-now', function (req, res) {
 
 });*/
 
+const worker = createWorker({
+    logger: m => console.log(m)
+});
+
 var storage = multer.diskStorage({
     destination: "./data/votingData/",
     filename: (req, file, cb) => {
@@ -321,8 +557,42 @@ var upload = multer({
 
 app.post('/upload', upload, function (req, res, next) {
 
-    var success = req.file.filename + "uploaded successfully";
-    res.render('upload-file', { title: 'Upload File', success: success });
+    //var success = req.file.filename + "uploaded successfully";
+    //res.render('upload-file', { title: 'Upload File', success: success });
+
+    const imageFile = req.file.filename;
+      var success = req.file.filename + "uploaded successfully";
+
+      const imageDetails = new UploadFile({
+        imagename:imageFile,
+        userId: req.user // user saved in session
+      });
+      imageDetails.save()
+      .then(result => {
+        res.render('upload-file', { title: 'Upload File', success:success });
+      })
+      .catch(err => {
+          console.log(err);
+
+      });
+      
+      fs.readFile(`./data/votingData/${req.file.filename}`, (err,data) => {
+          if(err){
+              return console.log(err);
+          }
+          (async () => {
+            await worker.load();
+            await worker.loadLanguage('eng');
+            await worker.initialize('eng');
+
+            const { data: {text} } = await worker.recognize(data);
+            console.log(text);
+
+            await worker.terminate();
+
+          })();
+      });
+     
 
 });
 
@@ -372,11 +642,11 @@ app.post('/thank-you', async function (req, res) {
         //     voterID: data.voterId
         // });
         //function call to fetch User based on id
-        users.forEach(function (user) {
+        /*users.forEach(function (user) {
             if (user.id === data.userId) {
                 user.voted = true;
             }
-        });
+        });*/
         res.render('thank-you',{name: req.user.name});
         console.log(users);
     } catch {
@@ -386,7 +656,17 @@ app.post('/thank-you', async function (req, res) {
 
 
 
-const PORT = process.env.PORT || 5000;
+/*const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`app is live at ${PORT}`);
-})
+})*/
+
+mongoose.connect(MONGODB_URI)
+.then(result => {
+    const PORT=process.env.PORT||5000;
+    app.listen(PORT,()=>{
+    console.log(`app is live at ${PORT}`);
+});
+}).catch(err=> {
+    console.log(err);
+});
