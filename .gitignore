@@ -9,3 +9,5 @@ webpack-assets.json
 launch.json
 package-lock.json
 .env
+node_modules
+

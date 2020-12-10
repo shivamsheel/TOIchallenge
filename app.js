@@ -15,9 +15,12 @@ const bcrypt = require('bcrypt');
 const verifyController = require('./controllers/verifyController');
 
 const multer = require('multer');
+const AWS = require('aws-sdk');
+const uuid = require('uuid');
 
 const app = express();
 let data = {};
+AWS.config.loadFromPath('./config.json');
 
 // view engine setup
 //app.engine('handlebars',exphbs({ extname: "hbs", defaultLayout: false, layoutsDir: "views/ "}));
@@ -47,10 +50,19 @@ const votes = {
 const optionHash = {};
 const partyArray = ["BJP", "Congress", "AAP", "NOTA"];
 
+/*app.get('/', function (req, res) {
+    res.render('contact');
+    //res.render('cts');
+});*/
+
 app.get('/', function (req, res) {
     res.render('contact');
     //res.render('cts');
+    console.log('root file');
+    
+   
 });
+
 
 app.post('/', async (req, res) => {
     try {
