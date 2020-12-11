@@ -1,4 +1,4 @@
-const bucket = 'votebucketdata' // the bucketname without s3://
+  const bucket = 'votebucketdata' // the bucketname without s3://
    const photo  = 'Object-shiv.png' // the name of file
    /*const config = new AWS.Config({
      accessKeyId: process.env.AWS_ACCESS_KEY_ID,

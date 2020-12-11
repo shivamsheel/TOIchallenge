@@ -11,4 +11,5 @@ package-lock.json
 .env
 node_modules
 aws-cli
-
+config.json
+audit.js

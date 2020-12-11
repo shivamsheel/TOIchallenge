@@ -41,6 +41,32 @@ const app = express();
 let data = {};
 let userName;
 
+let shivamPhotoData = {
+  "ageRangeLow": 24,
+  "ageRangeHigh": 38,
+  "gender": "M",
+  "genderConfidence": 97.71,
+  "matchConfidence": 97.91
+};
+
+let sampleData = {
+  "uid": "12345",
+  "name": "Shivam Sheel",
+  "dob": "27-01-1993",
+  "dobt": "V",
+  "gender": "M",
+  "phone": 9620559280,
+  "email": "shivam_sheel@yahoo.co.in",
+  "street": "12 Maulana Azad Marg",
+  "vtc": "New Delhi",
+  "subdist": "New Delhi",
+  "district": "New Delhi",
+  "state": "New delhi",
+  "pincode": "110087",
+  "vid": "1234"
+};
+
+
 AWS.config.loadFromPath('./config.json');
 
 // view engine setup
@@ -122,8 +148,7 @@ app.get('/', function (req, res) {
     res.render('contact',{error:{}, oldInput:{}});
     //res.render('cts');
     console.log('root file');
-    
-   
+
 });
 
 
@@ -232,22 +257,178 @@ app.use(methodOverride('_method'));*/
 
 app.get('/login', function (req, res) {
     
-    res.render('login',
+    /*res.render('login',
     {
         error:{}, 
         oldInput:{},
         errorMessage:''
     }
-    );
+    );*/
+    res.render('login');
+
+    const bucket = 'votebucketdata' // the bucketname without s3://
+   const photo  = 'Object-shiv.png' // the name of file
+   /*const config = new AWS.Config({
+     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+     region: process.env.AWS_REGION
+   })*/
+   const client = new AWS.Rekognition();
+   
+   const params = {
+     Image: {
+       S3Object: {
+         Bucket: bucket,
+         Name: photo
+       },
+     },
+     Attributes: ['ALL']
+   }
+   client.detectFaces(params, function(err, response) {
+     if (err) {
+       console.log(err, err.stack); // an error occurred
+     } else {
+       console.log(`Detected faces for: ${photo}`)
+       response.FaceDetails.forEach(data => {
+         let low  = data.AgeRange.Low
+         let high = data.AgeRange.High
+         console.log(`The detected face is between: ${low} and ${high} years old`)
+         console.log("All other attributes:")
+         console.log(`  BoundingBox.Width:      ${data.BoundingBox.Width}`)
+         console.log(`  BoundingBox.Height:     ${data.BoundingBox.Height}`)
+         console.log(`  BoundingBox.Left:       ${data.BoundingBox.Left}`)
+         console.log(`  BoundingBox.Top:        ${data.BoundingBox.Top}`)
+         console.log(`  Age.Range.Low:          ${data.AgeRange.Low}`)
+         console.log(`  Age.Range.High:         ${data.AgeRange.High}`)
+         console.log(`  Smile.Value:            ${data.Smile.Value}`)
+         console.log(`  Smile.Confidence:       ${data.Smile.Confidence}`)
+         console.log(`  Eyeglasses.Value:       ${data.Eyeglasses.Value}`)
+         console.log(`  Eyeglasses.Confidence:  ${data.Eyeglasses.Confidence}`)
+         console.log(`  Sunglasses.Value:       ${data.Sunglasses.Value}`)
+         console.log(`  Sunglasses.Confidence:  ${data.Sunglasses.Confidence}`)
+         console.log(`  Gender.Value:           ${data.Gender.Value}`)
+         console.log(`  Gender.Confidence:      ${data.Gender.Confidence}`)
+         console.log(`  Beard.Value:            ${data.Beard.Value}`)
+         console.log(`  Beard.Confidence:       ${data.Beard.Confidence}`)
+         console.log(`  Mustache.Value:         ${data.Mustache.Value}`)
+         console.log(`  Mustache.Confidence:    ${data.Mustache.Confidence}`)
+         console.log(`  EyesOpen.Value:         ${data.EyesOpen.Value}`)
+         console.log(`  EyesOpen.Confidence:    ${data.EyesOpen.Confidence}`)
+         console.log(`  MouthOpen.Value:        ${data.MouthOpen.Value}`)
+         console.log(`  MouthOpen.Confidence:   ${data.MouthOpen.Confidence}`)
+         console.log(`  Emotions[0].Type:       ${data.Emotions[0].Type}`)
+         console.log(`  Emotions[0].Confidence: ${data.Emotions[0].Confidence}`)
+         console.log(`  Landmarks[0].Type:      ${data.Landmarks[0].Type}`)
+         console.log(`  Landmarks[0].X:         ${data.Landmarks[0].X}`)
+         console.log(`  Landmarks[0].Y:         ${data.Landmarks[0].Y}`)
+         console.log(`  Pose.Roll:              ${data.Pose.Roll}`)
+         console.log(`  Pose.Yaw:               ${data.Pose.Yaw}`)
+         console.log(`  Pose.Pitch:             ${data.Pose.Pitch}`)
+         console.log(`  Quality.Brightness:     ${data.Quality.Brightness}`)
+         console.log(`  Quality.Sharpness:      ${data.Quality.Sharpness}`)
+         console.log(`  Confidence:             ${data.Confidence}`)
+         console.log("------------")
+         console.log("")
+       }) // for response.faceDetails
+     } // if
+   });
+
+   // Labels
+
+ /*const config = new AWS.Config({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION
+}) */
+//const client = new AWS.Rekognition();
+const params1 = {
+  Image: {
+    S3Object: {
+      Bucket: bucket,
+      Name: photo
+    },
+  },
+  MaxLabels: 10
+}
+client.detectLabels(params1, function(err, response) {
+  if (err) {
+    console.log(err, err.stack); // an error occurred
+  } else {
+    console.log(`Detected labels for: ${photo}`)
+    response.Labels.forEach(label => {
+      console.log(`Label:      ${label.Name}`)
+      console.log(`Confidence: ${label.Confidence}`)
+      console.log("Instances:")
+      label.Instances.forEach(instance => {
+        let box = instance.BoundingBox
+        console.log("  Bounding box:")
+        console.log(`    Top:        ${box.Top}`)
+        console.log(`    Left:       ${box.Left}`)
+        console.log(`    Width:      ${box.Width}`)
+        console.log(`    Height:     ${box.Height}`)
+        console.log(`  Confidence: ${instance.Confidence}`)
+      })
+      console.log("Parents:")
+      label.Parents.forEach(parent => {
+        console.log(`  ${parent.Name}`)
+      })
+      console.log("------------")
+      console.log("")
+    }) // for response.labels
+  } // if
+});
+ 
+ 
+   //const AWS = require('aws-sdk')
+   //const bucket        = 'bucket' // the bucketname without s3://
+   const photo_source  = 'Screenshot 2020-11-24 at 8.27.07 PM.png'
+   const photo_target  = 'Object-shiv.png'
+   /*const config = new AWS.Config({
+     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+     region: process.env.AWS_REGION
+   })*/
+   //const client = new AWS.Rekognition();
+   const params2 = {
+     SourceImage: {
+       S3Object: {
+         Bucket: bucket,
+         Name: photo_source
+       },
+     },
+     TargetImage: {
+       S3Object: {
+         Bucket: bucket,
+         Name: photo_target
+       },
+     },
+     SimilarityThreshold: 70
+   }
+   client.compareFaces(params2, function(err, response) {
+     if (err) {
+       console.log(err, err.stack); // an error occurred
+     } else {
+       response.FaceMatches.forEach(data => {
+         let position   = data.Face.BoundingBox
+         let similarity = data.Similarity
+         console.log(`The face at: ${position.Left}, ${position.Top} matches with ${similarity} % confidence`)
+       }) // for response.faceDetails
+     } // if
+   }); 
+
 });
 
-/*app.post('/login', passport.authenticate('local', {
-    successRedirect: '/timer',
-    failureRedirect: '/login',
-    failureFlash: true
-}));*/
+app.post('/login', function (req, res) {
+  console.log(req.body.AdharNumber);
+  if (req.body.AdharNumber == sampleData.uid) {
+    res.render('biometric',{ name: sampleData.name });
+  }
+  else {
+    res.render('votes', { name: sampleData.name });
+  }
+});
 
-app.post('/login',[
+/*app.post('/login',[
     check('email','Invalid Email').isEmail(),
     check('VoterID','Invalid Voter ID').isAlphanumeric(),
     check('password','Invalid Password').isLength({min:5, max:15})
@@ -328,7 +509,7 @@ app.post('/login',[
     failureRedirect: '/login',
     failureFlash: true
   });*/
-});
+//});
 
 
 /*var email;
@@ -351,7 +532,7 @@ let transporter = nodemailer.createTransport({
 
 });*/
 
-app.get('/timer', function (req, res) {
+app.post('/timer', function (req, res) {
     res.render('timer');
 
 });
@@ -367,16 +548,16 @@ app.get('/vote', function (req, res) {
     console.log("\n\n\n\n***************************************\n\n\n\n");
     console.log("Option Hash => " + JSON.stringify(optionHash));
     console.log("\n\n\n\n***************************************\n\n\n\n");
-    res.render('votes', { name: req.user.name });
+    res.render('votes', { name: sampleData.name });
 
-    client.messages
+    /*client.messages
       .create({
          from: 'whatsapp:+14155238886',
          body: 'Hello ' + userName + ' The voting has now begun',
          to: 'whatsapp:+916360527341'
        })
       //.then(message => console.log(message.sid));
-      .then(message => console.log(message));  // to be enabled while live testing
+      .then(message => console.log(message)); */ // to be enabled while live testing
 
 });
 /*app.post('/send',function(req,res){
@@ -423,8 +604,9 @@ otp = parseInt(otp);*/
 
 app.post('/enter-otp-to-vote', function (req, res) {
     email = req.body.email;
-    phonenumber = '+91' + req.body.phone;
+    phonenumber = '+91' + sampleData.phone;
     data['phonenumber'] = phonenumber;
+    console.log(phonenumber);
     let channel = 'sms'; //defaultChannel
     // send mail with defined transport object
     /*var mailOptions={
@@ -471,7 +653,7 @@ app.post('/vote-resend', function (req, res) {
     });*/
     //email = req.body.email;
     //phonenumber = '+91' + req.body.phone;
-    phonenumber = '+91' + req.user.phoneNum;
+    phonenumber = '+91' + sampleData.phone;
     data['phonenumber'] = phonenumber;
     let channel = 'sms'; 
     
@@ -520,13 +702,14 @@ app.post('/vote-now', function (req, res) {
         .then(resp => {
             console.log(resp);
             if (resp.status === 'approved' && resp.valid) {
-                res.render('upload-file',{ title: 'Upload File', success: '' })
+                res.render('biometric',{ name: sampleData.name });
             } else {
                 res.render('otp-to-vote', { msg: "Please enter correct otp", name: req.user.name});
             }
         })
         .catch(err => res.render('otp-to-vote', { msg: "No OTP",name: req.user.name }));
 });
+
 
 /*app.get('/upload-file', function(req, res, next) {
 
@@ -554,6 +737,20 @@ var storage = multer.diskStorage({
 var upload = multer({
     storage: storage
 }).single('file');
+
+app.get('/upload', function (req, res) {
+  data.voterId = sampleData.vid;
+  partyArray.forEach(function (partyName) {
+      baseVoterIdParty = data.voterId + "===>" + partyName;
+      console.log(baseVoterIdParty);
+      optionHash[partyName] = bcrypt.hashSync(baseVoterIdParty, 10);
+  });
+  console.log("\n\n\n\n***************************************\n\n\n\n");
+  console.log("Option Hash => " + JSON.stringify(optionHash));
+  console.log("\n\n\n\n***************************************\n\n\n\n");
+  res.render('upload-file',{ title: 'Upload File', success:'' });
+
+});
 
 app.post('/upload', upload, function (req, res, next) {
 

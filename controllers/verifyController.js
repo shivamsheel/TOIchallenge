@@ -1,5 +1,5 @@
 let ACCOUNT_SID="AC592debfec8694fdca9503b300e6bb471"
-let AUTH_TOKEN="87ae77a843dd2849440a5a10896cbcce"
+let AUTH_TOKEN="c3fc84cb96824f156a7f8db785dcc652" // changed
 let VERIFY_SERVICE_SID="VAe093d0523158de302a59d66a6a45ee8f"
 
 const client = require('twilio')(ACCOUNT_SID, AUTH_TOKEN);
