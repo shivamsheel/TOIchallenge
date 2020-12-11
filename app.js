@@ -51,7 +51,7 @@ let shivamPhotoData = {
 
 let sampleData = {
   "uid": "12345",
-  "name": "Shivam Sheel",
+  "name": "Shivam",
   "dob": "27-01-1993",
   "dobt": "V",
   "gender": "M",
@@ -143,6 +143,12 @@ function isAuth (req,res,next) {
 
 };
 
+app.get('/support', function (req, res) {
+  res.render('chatbot',{ name: sampleData.name });
+  //res.render('cts');
+  console.log('chatbot');
+
+});
 
 app.get('/', function (req, res) {
     res.render('contact',{error:{}, oldInput:{}});
