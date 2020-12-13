@@ -40,6 +40,10 @@ var userSchema = new Schema({
         type:Date,
         default:Date.now
 
+    },
+    regId:{
+        type:String,
+        required:true
     }
 });
 

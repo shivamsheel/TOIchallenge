@@ -40,6 +40,7 @@ const uuid = require('uuid');
 const app = express();
 let data = {};
 let userName;
+let RegisId;
 
 let shivamPhotoData = {
   "ageRangeLow": 24,
@@ -217,6 +218,7 @@ app.post('/', [
 
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const hashedVoterId = await bcrypt.hash(req.body.VoterID, 10);
+    const hashedAdhar =  await bcrypt.hash( AdharNumber, 10);
     
        /*users.push({
         id: Date.now().toString(),
@@ -235,17 +237,40 @@ app.post('/', [
         password: hashedPassword,
         isAdmin: false,
         hasVoted: false,
+        regId: hashedAdhar
         
         });
       user.save()
       .then(result => {
         res.redirect('/login');
         console.log(user);
+        RegisId = hashedAdhar;
+        console.log(RegisId);
         //console.log(users);
       }).catch(err => {
         console.log(err);
         res.redirect('/');
       });
+
+          client.messages
+      .create({
+         from: 'whatsapp:+14155238886',
+         body: 'Hello ' + sampleData.name + 
+         ' The voting has now begun ' + 
+         ' Please keep this QR code handy - ' + 
+         ' https://webqr.com/ '+
+         ' This is your registration id'+ RegisId +
+         ' Please find the details below - ' +
+         ' To connect Aadhar with Voter ID visit - ' +
+         ' https://www.nvsp.in/'+
+         ' To find your map visit - ' + 
+         ' https://cnn.it/2Lw9HaZ ' + 
+         ' ***** HAPPY VOTING ***** ',
+         to: 'whatsapp:+916360527341'
+       })
+      //.then(message => console.log(message.sid));
+      .then(message => console.log(message));  // to be enabled while live testing
+
 });
 
 
