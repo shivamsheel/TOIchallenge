@@ -20,6 +20,7 @@ const {createWorker} = require('tesseract.js');
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require('twilio')(accountSid, authToken);
+
 const MONGODB_URI = 'mongodb+srv://ShivamMessi:messi1234@cluster0.3ntoz.mongodb.net/lostvotes?retryWrites=true&w=majority';
 
 const store = new MongoDBStore({
@@ -68,7 +69,7 @@ let sampleData = {
 };
 
 
-AWS.config.loadFromPath('./config.json');
+//AWS.config.loadFromPath('./config.json');
 
 // view engine setup
 //app.engine('handlebars',exphbs({ extname: "hbs", defaultLayout: false, layoutsDir: "views/ "}));
@@ -256,22 +257,23 @@ app.post('/', [
       .create({
          from: 'whatsapp:+14155238886',
          body: 'Hello ' + sampleData.name + 
-         ' The voting has now begun ' + 
-         ' Please keep this QR code handy - ' + 
-         ' https://webqr.com/ '+
-         ' This is your registration id'+ RegisId +
-         ' Please find the details below - ' +
-         ' To connect Aadhar with Voter ID visit - ' +
-         ' https://www.nvsp.in/'+
-         ' To find your map visit - ' + 
-         ' https://cnn.it/2Lw9HaZ ' + 
-         ' ***** HAPPY VOTING ***** ',
+         ' The voting has now begun \n' + 
+         ' Please keep this QR code handy \n' + 
+         ' https://webqr.com/ \n'+
+         ' This is your registration id  - Shivam@54321 \n' + 
+         ' Please find the details below - \n' +
+         ' To connect Aadhar with Voter ID visit - \n' +
+         ' https://www.nvsp.in/ \n'+
+         ' To find your map visit - \n' + 
+         ' https://cnn.it/2Lw9HaZ \n' + 
+         ' ***** HAPPY VOTING SHIVAM ***** ',
          to: 'whatsapp:+916360527341'
        })
       //.then(message => console.log(message.sid));
       .then(message => console.log(message));  // to be enabled while live testing
 
 });
+
 
 
 
@@ -512,7 +514,7 @@ app.post('/enter-otp-to-vote', function (req, res) {
     verifyController.getCode(phonenumber, channel)
         .then(resp => {
             console.log(resp.data);
-            res.render('otp-to-vote', { msg: '', name: req.user.name });
+            res.render('otp-to-vote', { msg: '', name: sampleData.name });
         })
         .catch(err => console.log("Error in getting otp", err));
 });
@@ -545,7 +547,7 @@ app.post('/vote-resend', function (req, res) {
     verifyController.getCode(phonenumber, channel)
         .then(resp => {
             console.log(resp.data);
-            res.render('otp-to-vote', { msg: 'OTP has been re-sent', name: req.user.name });
+            res.render('otp-to-vote', { msg: 'OTP has been re-sent', name: sampleData.name });
         })
         .catch(err => console.log("Error in getting otp", err));
 
@@ -587,10 +589,10 @@ app.post('/vote-now', function (req, res) {
             if (resp.status === 'approved' && resp.valid) {
                 res.render('biometric',{ name: sampleData.name });
             } else {
-                res.render('otp-to-vote', { msg: "Please enter correct otp", name: req.user.name});
+                res.render('otp-to-vote', { msg: "Please enter correct otp", name: sampleData.name});
             }
         })
-        .catch(err => res.render('otp-to-vote', { msg: "No OTP",name: req.user.name }));
+        .catch(err => res.render('otp-to-vote', { msg: "No OTP",name: sampleData.name }));
 });
 
 
@@ -678,7 +680,7 @@ app.post('/upload', upload, function (req, res, next) {
 
 app.post('/done', function (req, res, next) {
 
-    res.render('vote-now', { name: req.user.name, bjp: optionHash["BJP"], cong: optionHash["Congress"], aap: optionHash["AAP"], nota: optionHash["NOTA"] });
+    res.render('vote-now', { name: sampleData.name, bjp: optionHash["BJP"], cong: optionHash["Congress"], aap: optionHash["AAP"], nota: optionHash["NOTA"] });
 });
 
 app.get('/admin', function (req, res) {
@@ -727,7 +729,7 @@ app.post('/thank-you', async function (req, res) {
                 user.voted = true;
             }
         });*/
-        res.render('thank-you',{name: req.user.name});
+        res.render('thank-you',{name: sampleData.name});
         console.log(users);
     } catch {
         res.redirect('/login');

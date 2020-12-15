@@ -1,13 +1,14 @@
-let ACCOUNT_SID="AC592debfec8694fdca9503b300e6bb471"
-let AUTH_TOKEN="6e4cfa65f6b7faf11c801a1056824a02" // changed
-let VERIFY_SERVICE_SID="VAe093d0523158de302a59d66a6a45ee8f"
 
-const client = require('twilio')(ACCOUNT_SID, AUTH_TOKEN);
+const ACCOUNT_SID1= process.env.ACCOUNT_SID1;
+const AUTH_TOKEN1= process.env.AUTH_TOKEN1; // changed
+const VERIFY_SERVICE_SID1= process.env.VERIFY_SERVICE_SID1;
+
+const client = require('twilio')(ACCOUNT_SID1, AUTH_TOKEN1);
 
 exports.getCode = async (phone, channel) => {
     return client
         .verify
-        .services(VERIFY_SERVICE_SID)
+        .services(VERIFY_SERVICE_SID1)
         .verifications
         .create({
             to: `+${phone}`,
@@ -22,7 +23,7 @@ exports.verifyCode = async (phonenumber, code) => {
    console.log(phonenumber, code);
    return client
         .verify
-        .services(VERIFY_SERVICE_SID)
+        .services(VERIFY_SERVICE_SID1)
         .verificationChecks
         .create({
             to: phonenumber,
