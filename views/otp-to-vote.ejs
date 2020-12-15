@@ -10,12 +10,13 @@
   <link rel="stylesheet" href="../public/css/style.css">
 </head>
 <body>
-  <% if (isAuthenticated) { %>
+  
   <div class="container">
     <h1 class="brand"><span>Welcome <%=name%> </span> OTP for Vote</h1>
     <div class="wrapper animated bounceInLeft">
       <div class="company-info">
         <h3>Enter OTP to Vote </h3>
+       
         <ul>
           <li><i class="fa fa-road"></i>Election Commission of India</li>
           <li><i class="fa fa-phone"></i>011-25281026</li>
@@ -27,6 +28,7 @@
         <form method="POST" action="/vote-now">
           <p>
             <label>Enter OTP</label>
+            <label>OTP दर्ज करें</label>
             <input type="text" name="otp" required>
           </p>
           
@@ -66,11 +68,7 @@
           console.log(err.name, err.message);
       });
   </script>
-   <% }  else { %>
-  
-    <%- include('session-thankyou.ejs') %>
-  
-    <% } %>
+   
 </body>
 </html>
 

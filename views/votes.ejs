@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../public/css/style.css">
 </head>
 <body>
-  <% if (isAuthenticated) { %>
+ 
   <div class="container">
     <h1 class="brand"><span>Welcome <%=name%> </span> VOTE NOW</h1>
     <div class="wrapper animated bounceInLeft">
@@ -24,6 +24,7 @@
       </div>
       <div class="contact">
         <h3>Vote Now <%=name%></h3>
+        <h3> वोट अब शिवम </h3>
         <form method="POST" action="/enter-otp-to-vote">
           <!--<p>
             <label>Firstname</label>
@@ -80,11 +81,7 @@
   </script>
   <img src = "../public/Aadhar1.png" style="height: 250px; width: 400px;"/>
   <img src = "../public/Aadhar2.png" style="height: 250px; width: 400px;"/>
-  <% }  else { %>
   
-    <%- include('session-thankyou.ejs') %>
-  
-    <% } %>
 </body>
 </html>
 

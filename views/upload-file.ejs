@@ -9,7 +9,7 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
   </head>
   <body>
-    <% if (isAuthenticated) { %> 
+   
         <div class="container">
                 <div class="row">
                         <% if(success !=''){%>
@@ -126,6 +126,7 @@
                                 OverconstrainedError - constraint video settings preventing
                                 TypeError - audio: false, video: false
                                 *********************************/
+                               
                             </script>
 
                     <div id="uploadfile" style="margin-top:50px" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
@@ -232,11 +233,7 @@
                     </div>
                 </div>
                 
-                <% }  else { %>
-  
-                    <%- include('session-thankyou.ejs') %>
-                  
-                    <% } %>
+                
               </body>
             </html>
 

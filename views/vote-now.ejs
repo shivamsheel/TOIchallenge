@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.css" />
   <link rel="stylesheet" href="../public/css/style.css">
 </head>
-<% if (isAuthenticated) { %> 
+
 <body>
   <div class="container">
     <h1 class="brand"><span>Welcome <%=name%> </span> VOTE NOW</h1>
@@ -25,7 +25,8 @@
         </ul>
       </div>
       <div class="contact">
-        <h3>Please Vote!</h3>
+        <h3>Please Vote </h3>
+        <h3> कृपया वोट करें </h3>
         <form method="POST" action="/thank-you">
           <p>
             <label class="voter">BJP
@@ -76,11 +77,7 @@
       });
   </script>
 </body>
-<% }  else { %>
-  
-  <%- include('session-thankyou.ejs') %>
 
-  <% } %>
 
 </html>
 
