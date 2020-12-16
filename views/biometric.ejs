@@ -57,18 +57,38 @@
             <input type="password" id="password" name="password" required >
             
           </p> -->
-
-          <p class="full">
-            <button type="submit">Submit</button>
+          <div>Place your right thumb on the machine</div>
+          <br />
+          <div>अपने दाहिने अंगूठे को मशीन पर रखें</div>
+          <br />
+          <div>
+            <img src = "https://media.giphy.com/media/Q8fSrPQi3urUKpHw3d/giphy.gif" style="height: 80px; width: 90px;"/>
+          </div>
+          <br />
+          <div style="color: rgb(20, 245, 12); font-weight: bold;" id="verifyText"></div>
+          <p id="bioBtn" class="full">
+            <!-- <button type="submit">Submit</button> -->
           </p>
           <!-- <a class="login-btn" href="/">Sign up</a> -->
         </form>
       </div>
     </div>
   </div>
-  <img src = "../public/Aadhar1.png" style="height: 250px; width: 400px;"/>
-  <img src = "../public/Aadhar2.png" style="height: 250px; width: 400px;"/>
-  <img src = "../public/voter.png" style="height: 250px; width: 400px;"/>
+  <div style="position: relative; left: 125px">
+    <img src = "../public/Aadhar1.png" style="height: 250px; width: 400px;"/>
+    <img src = "../public/Aadhar2.png" style="height: 250px; width: 400px;"/>
+    <img src = "../public/voter.png" style="height: 250px; width: 400px;"/>
+  </div>
 </body>
-
+<script>
+  setTimeout(()=> {
+    var node = document.getElementById("bioBtn");
+    var node2 = document.getElementById("verifyText");
+    node2.innerHTML = "Verified successfully";
+    var btn = document.createElement("BUTTON");
+    btn.innerHTML = "VOTE NOW";
+    btn.setAttribute("type", "submit");
+    node.appendChild(btn);
+  }, 3000);
+</script>
 </html>
