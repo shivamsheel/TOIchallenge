@@ -646,8 +646,8 @@ app.post('/upload', upload, function (req, res, next) {
       var success = req.file.filename + "uploaded successfully";
 
       const imageDetails = new UploadFile({
-        imagename:imageFile,
-        userId: req.user // user saved in session
+        imagename:imageFile
+        //userId: req.user // user saved in session
       });
       imageDetails.save()
       .then(result => {
