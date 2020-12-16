@@ -265,7 +265,7 @@ app.post('/', [
          ' To connect Aadhar with Voter ID visit - \n' +
          ' https://www.nvsp.in/ \n'+
          ' To find your map visit - \n' + 
-         ' https://cnn.it/2Lw9HaZ \n' + 
+         ' http://localhost:3000/voters/details\n' + 
          ' ***** HAPPY VOTING SHIVAM ***** ',
          to: 'whatsapp:+916360527341'
        })
