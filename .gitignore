@@ -13,3 +13,6 @@ node_modules
 aws-cli
 config.json
 audit.js
+access.log
+server.cert
+server.key

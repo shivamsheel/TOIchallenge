@@ -4,9 +4,9 @@ if (process.env.NODE_ENV !== 'production') {
 
 const express = require('express');
 const bodyparser = require('body-parser');
-const nodemailer = require('nodemailer');
+//const nodemailer = require('nodemailer');
 const path = require('path');
-const passport = require('passport');
+//const passport = require('passport');
 const flash = require('express-flash');
 const session = require('express-session');
 const methodOverride = require('method-override');
@@ -20,6 +20,11 @@ const {createWorker} = require('tesseract.js');
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require('twilio')(accountSid, authToken);
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan');
+const https = require('https');
+
 
 const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.3ntoz.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}?retryWrites=true&w=majority`;
 
@@ -85,6 +90,16 @@ app.use(bodyparser.json());
 //static folder
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
+const accessLogStream = fs.createWriteStream(
+    path.join(__dirname, 'access.log'),
+    {flags:'a'} //append the logs
+);
+
+app.use(helmet());
+app.use(compression());
+app.use(morgan('combined',{ stream: accessLogStream }));
+
+
 /*const initializePassport = require('./passport-config');
 initializePassport(passport, email => users.find(user => user.email === email), id => users.find(user => user.id === id));*/
 
@@ -98,6 +113,8 @@ app.use(session({
   //app.use(csrfProtection); //after you initialize the session
   app.use(flash()); //after session
   
+// const privateKey = fs.readFileSync('server.key');
+// const certificate = fs.readFileSync('server.cert');
   
   
   app.use((req,res,next) => {
@@ -135,15 +152,15 @@ const partyArray = ["BJP", "Congress", "AAP", "NOTA"];
     //res.render('cts');
 });*/
 
-function isAuth (req,res,next) {
+// function isAuth (req,res,next) {
 
-    if(!req.session.isLoggedIn) {
-        console.log('no Active sessions found!');
-        return res.redirect('/login');
-    }
-    next();
+//     if(!req.session.isLoggedIn) {
+//         console.log('no Active sessions found!');
+//         return res.redirect('/login');
+//     }
+//     next();
 
-};
+// };
 
 app.get('/support', function (req, res) {
   res.render('chatbot',{ name: sampleData.name });
@@ -746,8 +763,11 @@ app.listen(PORT, () => {
 mongoose.connect(MONGODB_URI)
 .then(result => {
     const PORT=process.env.PORT||5000;
+    // https.createServer({ key: privateKey, cert: certificate }, app)
+    // .listen(PORT,()=>{
+    // console.log(`app is live at ${PORT}`); // in case manual certification is needed.
     app.listen(PORT,()=>{
-    console.log(`app is live at ${PORT}`);
+        console.log(`app is live at ${PORT}`);
 });
 }).catch(err=> {
     console.log(err);
